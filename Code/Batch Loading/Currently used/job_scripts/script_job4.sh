@@ -1,4 +1,4 @@
-#!/bin/sh 
+!/bin/sh 
 #SBATCH --job-name=candidate_training
 #SBATCH --account=rrg-kyi
 #SBATCH --time=55:00:00
