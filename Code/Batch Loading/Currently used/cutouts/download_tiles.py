@@ -3,7 +3,6 @@ import sys
 import pandas as pd
 import numpy as np
 
-
 #directories
 label_dir = "/home/anahoban/projects/def-sfabbro/anahoban/lensing/GravitationalLensing/Code/Batch Loading/Currently used/labels/"
 lens_dir_scratch = os.path.expandvars("$SCRATCH") + '/all_lenses'
@@ -51,8 +50,6 @@ for index, row in tiles_table.iterrows():
     
 tiles_table['bands_list'] = bands_list
 
-not_found = []#probably in DR2 of PS1
-
 
 for tile in tiles_with_lenses:
     #download tiles + weight map for each tile containing at least one candidate
@@ -63,13 +60,13 @@ for tile in tiles_with_lenses:
             if (band2cam[band] + '.' + tile + '.' +  band + '.fits') not in prev_dowloaded_files:
                 os.system(band_to_dir[band] + tile + '.' +  band + '.fits {}'.format(lens_dir_scratch) )
             
-            if (band2cam[band] + '.' + tile + '.' +  band + band_to_mask[band]) not in prev_dowloaded_files:
+            if (band2cam[band] + '.' + tile + '.' +  band + band_to_mask[band][:-1]) not in prev_dowloaded_files:
                 os.system(band_to_dir[band] + tile + '.' +  band + band_to_mask[band] + str(lens_dir_scratch) )
         except:
-            not_found.append(tile)
+            continue
         if band in ['u','r','g']:
             if (band2cam[band] + '.' + tile + '.' +  band + '.cat')  not in prev_dowloaded_files:
                 os.system(band_to_dir[band] + tile + '.' +  band + '.cat {}'.format(lens_dir_scratch) )
                 
-print(not_found)
-        
+
+
