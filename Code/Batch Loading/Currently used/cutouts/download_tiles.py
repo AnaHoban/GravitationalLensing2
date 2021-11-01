@@ -36,8 +36,8 @@ band_to_mask = { 'u' : '.weight.fits.fz ',
 
 
 #make the urgz list for each tile
-keys = ['CFIS_u', 'CFIS_r', 'PS1_g', 'PS1_i', 'PS1_z','HCS_g']
-key_dict = {'CFIS_u': 'u', 'CFIS_r': 'r', 'PS1_g' : 'G', 'PS1_i': 'i', 'PS1_z': 'z','HCS_g': 'g'}
+keys = ['CFIS_u', 'CFIS_r', 'PS1_g', 'PS1_i', 'PS1_z','HSC_g']
+key_dict = {'CFIS_u': 'u', 'CFIS_r': 'r', 'PS1_g' : 'G', 'PS1_i': 'i', 'PS1_z': 'z','HSC_g': 'g'}
 band2cam = {v: k[:-2] for k, v in key_dict.items()}
 
 bands_list = []
@@ -55,11 +55,14 @@ for tile in tiles_with_lenses:
     #download tiles + weight map for each tile containing at least one candidate
     bands = tiles_table[tiles_table.Tile == tile]['bands_list'].item()
     print(bands)
+    
+
     for band in bands:
+    #for band in bands:
         try:
             if (band2cam[band] + '.' + tile + '.' +  band + '.fits') not in prev_dowloaded_files:
                 os.system(band_to_dir[band] + tile + '.' +  band + '.fits {}'.format(lens_dir_scratch) )
-            
+
             if (band2cam[band] + '.' + tile + '.' +  band + band_to_mask[band][:-1]) not in prev_dowloaded_files:
                 os.system(band_to_dir[band] + tile + '.' +  band + band_to_mask[band] + str(lens_dir_scratch) )
         except:
@@ -67,6 +70,6 @@ for tile in tiles_with_lenses:
         if band in ['u','r','g']:
             if (band2cam[band] + '.' + tile + '.' +  band + '.cat')  not in prev_dowloaded_files:
                 os.system(band_to_dir[band] + tile + '.' +  band + '.cat {}'.format(lens_dir_scratch) )
-                
+
 
 
