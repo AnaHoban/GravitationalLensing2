@@ -20,7 +20,7 @@ warnings.filterwarnings("ignore")
 cutout_size = 200
 cut_per_tile = 200
 mag_mode = 24.665777 - 0.5 #based on r catalogue on 76 million cutouts
-hf_file_name = 'Dataset_run2.h5'
+hf_file_name = 'Dataset_run2_4.h5'
 
 #directories
 label_dir = "/home/anahoban/projects/def-sfabbro/anahoban/lensing/GravitationalLensing/Code/Batch Loading/Currently used/labels/"
@@ -107,25 +107,26 @@ def ra_dec_to_xy(img_filename, ra, dec, band):
 ############ CODE STARTS HERE ################
 #list to create master catalogue in the end
 all_non_lenses = []
+#os.remove(scratch+hf_file_name)
 hf = h5py.File(scratch + hf_file_name, "w")
 
-for tile in tiles_with_lenses:    
-    #candidates coordindates for a tile
-    print(tile)
-    
-    #ra_dec list of candidates
-    ra_dec_list = [(row.RA, row.DEC) for index, row in lenses_in_survey[lenses_in_survey.Tile == tile][['RA','DEC']].iterrows()]
-    n_cand = len(ra_dec_list)
-    n = 0
-    
-    #available bands for this tile   
-    bands = list(lenses_in_survey.loc[lenses_in_survey.Tile == tile, 'bands_list'].iloc[0]) #array of bands
-    
-    cat_name = None #set it to none in case there is no u,r,g band for that cutout
-    
-    try:
-        
+print('starting cutout extraction')
 
+for tile in tiles_with_lenses[1500:]:    
+    try: #in case there is a problem somewhere for this tile
+        #candidates coordindates for a tile
+        print(tile)
+
+        #ra_dec list of candidates
+        ra_dec_list = [(row.RA, row.DEC) for index, row in lenses_in_survey[lenses_in_survey.Tile == tile][['RA','DEC']].iterrows()]
+        n_cand = len(ra_dec_list)
+        n = 0
+
+        #available bands for this tile   
+        bands = list(lenses_in_survey.loc[lenses_in_survey.Tile == tile, 'bands_list'].iloc[0]) #array of bands
+
+        cat_name = None #set it to none in case there is no u,r,g band for that cutout
+    
         #get r,g, or u catalogue
         if len(bands) > 0:
             n = cut_per_tile
@@ -149,6 +150,7 @@ for tile in tiles_with_lenses:
             print(band)
             if band == 'G': #not using ps1 g band
                 break
+                
             cam = band2cam[band]
 
             #get img and weight files
@@ -192,29 +194,28 @@ for tile in tiles_with_lenses:
                 #add to cutout collection
                 cut_array[count, :,:,band2index[band]] = img 
                 cut_array[count, :,:,band2index[band] + 5] = wt
+                
+            #clean up files related to this band
+            image.close()
+            weight.close()  
 
-        #store all cutouts in all avaiable bands for this tile in hf
-        for count in range(len(cut_array)):
-            hf.create_dataset(tile + '_'f"{count}", data=cut_array[count])      
+        #store all cutouts in all avaiable bands for this tile in hf only if there was more than one band and that band 
+        if np.all((cut_array == 0)) == False:
+            for count in range(len(cut_array)):
+                hf.create_dataset(tile + '_'f"{count}", data=cut_array[count])      
 
-        print(tile, 'done')
+            print(tile, 'done')
 
-        #clean up files related to this tile
-        image.close()
-        weight.close()  
-
-        #delete from slurm tmp dir
-        if cat_name is not None:
-            os.remove(tmp_dir + cat_name)
-        os.remove(tmp_dir + img_name)
-        os.remove(tmp_dir + wt_name)
+            #delete from slurm tmp dir
+            for f in os.listdir(tmp_dir):
+                os.remove(os.path.join(tmp_dir, f))
         
     except:
         print('ERROR: SOMETHING WENT WRONG FOR TILE' + tile)
-        continue
+ 
         
 hf.close()
 print('hf done')
 
 #master catalogue
-pd.DataFrame(np.array(all_non_lenses),columns = keys_mastercat).to_csv(scratch + 'mastercat_run2.csv')
+pd.DataFrame(np.array(all_non_lenses),columns = keys_mastercat).to_csv(scratch + 'mastercat_run2_4.csv')
