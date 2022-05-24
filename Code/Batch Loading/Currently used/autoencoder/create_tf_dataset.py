@@ -6,7 +6,7 @@ import numpy as np
 import tensorflow as tf
 
 #define useful directories
-project_dir = '/home/anahoban/projects/rrg-kyi/astro/cfis/W3/'
+project_dir = '/home/anahoban/projects/rrg-kyi/astro/cfis/'
 scratch = os.path.expandvars('$SCRATCH') + '/'
 h5_names = ['Dataset_run2_'+ str(i+1) + '.h5' for i in range(3)]
 
@@ -30,5 +30,10 @@ dataset_4 = tf.data.Dataset.from_generator(gen_4, output_types=(tf.float64),outp
 combined_dataset = dataset_1.concatenate(dataset_2).concatenate(dataset_3).concatenate(dataset_4)
 #save dataset
 tf.data.experimental.save(combined_dataset, path = project_dir + 'autoencoder_full_dataset_w')
+
+hf_1.close()
+hf_3.close()
+hf_2.close()
+hf_4.close()
 
 print('done')
